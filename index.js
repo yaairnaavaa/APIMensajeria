@@ -2,10 +2,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import twilio from "twilio";
-import pkg from "twilio/lib/twiml/MessagingResponse.js";
 import morgan from 'morgan';
-
-const { MessagingResponse } = pkg;
+const { MessagingResponse } = twilio.twiml;
 
 
 dotenv.config();
@@ -31,19 +29,23 @@ app.get("/sms", (req, res) => {
 });
 
 app.post("/sms", (req, res) => {
-  const incomingMsg = req.body.Body?.toLowerCase().trim() || "";
+  const incomingMsg = req.body.msg?.toLowerCase().trim() || "";
   const twiml = new MessagingResponse();
 
   console.log("📩 Mensaje recibido:", incomingMsg);
 
-  if (incomingMsg === "hola") {
-    twiml.message("👋 ¡Hola! Escribe 'MENU' para ver opciones disponibles.");
+  if (incomingMsg === "hello") {
+    twiml.message("👋 Hello! Type 'MENU' to see available options.");
   } else if (incomingMsg === "menu") {
-    twiml.message("📋 Opciones:\n1️⃣ STATUS\n2️⃣ AGENDAR\n3️⃣ CANCELAR");
-  } else if (incomingMsg === "status") {
-    twiml.message("📦 Tu pedido está en camino 🚚");
+    twiml.message("📋 OPTIONS:\n1️⃣ BALANCE\n2️⃣ TRANSFER\n3️⃣ SWAP");
+  } else if (incomingMsg === "balance") {
+    twiml.message("You chose the BALANCE option");
+  } else if (incomingMsg === "transfer") {
+    twiml.message("You chose the TRANSFER option");
+  } else if (incomingMsg === "swap") {
+    twiml.message("You chose the SWAP option");
   } else {
-    twiml.message("❓ Comando no reconocido. Escribe 'MENU' para ver opciones.");
+    twiml.message("❓ Command not recognized. Type 'MENU' to see options.");
   }
 
   res.type("text/xml").send(twiml.toString());
