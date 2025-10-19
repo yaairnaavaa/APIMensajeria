@@ -3,20 +3,33 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import twilio from "twilio";
 import pkg from "twilio/lib/twiml/MessagingResponse.js";
+import morgan from 'morgan';
+
 const { MessagingResponse } = pkg;
+
 
 dotenv.config();
 const app = express();
+app.use(morgan('dev')); // Utiliza el formato de registro 'dev'
+app.use(express.json()); // Analiza el cuerpo de las solicitudes en formato JSON
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Configurar cliente Twilio
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+app.get("/", (req, res) => {
+  res.send("Bienvenido a la API de Twilio");
+});
+
 /**
  * 📨 ENDPOINT PARA RECIBIR MENSAJES SMS
  * Twilio enviará aquí los mensajes entrantes
  */
+app.get("/sms", (req, res) => {
+  res.send("✅ Endpoint /sms activo, pero recuerda que Twilio usa POST");
+});
+
 app.post("/sms", (req, res) => {
   const incomingMsg = req.body.Body?.toLowerCase().trim() || "";
   const twiml = new MessagingResponse();
