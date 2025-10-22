@@ -30,19 +30,22 @@ app.get("/sms", (req, res) => {
 
 app.post("/sms", (req, res) => {
   const incomingMsg = req.body.msg?.toLowerCase().trim() || "";
+  const incomingMsgSMS = req.body.Body?.toLowerCase().trim() || "";
+
   const twiml = new MessagingResponse();
 
-  console.log("📩 Mensaje recibido:", incomingMsg);
+  console.log("📩 Mensaje recibidoAPI:", incomingMsg);
+  console.log("📩 Mensaje recibidoSMS:", incomingMsgSMS);
 
-  if (incomingMsg === "hello") {
+  if (incomingMsgSMS === "hello") {
     twiml.message("👋 Hello! Type 'MENU' to see available options.");
-  } else if (incomingMsg === "menu") {
+  } else if (incomingMsgSMS === "menu") {
     twiml.message("📋 OPTIONS:\n1️⃣ BALANCE\n2️⃣ TRANSFER\n3️⃣ SWAP");
-  } else if (incomingMsg === "balance") {
+  } else if (incomingMsgSMS === "balance") {
     twiml.message("You chose the BALANCE option");
-  } else if (incomingMsg === "transfer") {
+  } else if (incomingMsgSMS === "transfer") {
     twiml.message("You chose the TRANSFER option");
-  } else if (incomingMsg === "swap") {
+  } else if (incomingMsgSMS === "swap") {
     twiml.message("You chose the SWAP option");
   } else {
     twiml.message("❓ Command not recognized. Type 'MENU' to see options.");
