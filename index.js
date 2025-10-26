@@ -25,6 +25,8 @@ app.get("/sms", (req, res) => {
 });
 
 app.post("/sms", async (req, res) => {
+  console.log(req.body);
+  
   const incomingMsgSMS = req.body.Body?.toLowerCase().trim() || "";
   const twiml = new MessagingResponse();
 
