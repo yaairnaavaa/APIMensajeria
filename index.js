@@ -25,91 +25,133 @@ app.get("/sms", (req, res) => {
 });
 
 app.post("/sms", async (req, res) => {
-  const incomingMsgSMS = req.body.Body?.toLowerCase().trim() || "";
+  const from = req.body.From || "";
+  const incomingMsgSMS = req.body.Body?.trim() || "";
+  const incomingMsgLower = incomingMsgSMS.toLowerCase();
   const twiml = new MessagingResponse();
 
-  console.log("📩 Mensaje recibidoSMS:", incomingMsgSMS);
+  console.log("📩 From:", from);
+  console.log("📩 Body:", incomingMsgSMS);
 
   // MENSAJE DE BIENVENIDA
-  if (incomingMsgSMS === "hello" || incomingMsgSMS === "hi") {
+  if (incomingMsgLower === "hello" || incomingMsgLower === "hi") {
     twiml.message(
       "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
-      "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
-      "2️⃣ Transfer (Send money to another user)\n\n" +
-      "3️⃣ Deposit (Add funds to your account)\n\n" +
-      "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
-      "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
-      "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
-      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
-      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
-      "9️⃣ BTC in Dollars (Check BTC price in USD)"
+      "1️⃣ Balance (To check balance, type: BALANCE)\n" +
+      "2️⃣ Transfer (Send money to another user)\n" +
+      "3️⃣ Deposit (Add funds to your account)\n" +
+      "4️⃣ Withdraw (Withdraw funds from your account)\n" +
+      "5️⃣ BTC in USD (Check BTC price in USD)\n" +
+      "6️⃣ ETH to USD (Check ETH price in USD)\n" +
+      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
+      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
+      "9️⃣ BTC in Dollars (Check BTC price in USD)\n\n" +
+      "To register, type: REGISTER Name Email@example.com"
     );
   }
   // MENÚ OPCIONES
-  else if (incomingMsgSMS === "menu") {
+  else if (incomingMsgLower === "menu") {
     twiml.message(
       "📋 OPTIONS:\n\n" +
-      "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
-      "2️⃣ Transfer (Send money to another user)\n\n" +
-      "3️⃣ Deposit (Add funds to your account)\n\n" +
-      "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
-      "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
-      "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
-      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
-      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
-      "9️⃣ BTC in Dollars (Check BTC price in USD)"
+      "1️⃣ Balance (To check balance, type: BALANCE)\n" +
+      "2️⃣ Transfer (Send money to another user)\n" +
+      "3️⃣ Deposit (Add funds to your account)\n" +
+      "4️⃣ Withdraw (Withdraw funds from your account)\n" +
+      "5️⃣ BTC in USD (Check BTC price in USD)\n" +
+      "6️⃣ ETH to USD (Check ETH price in USD)\n" +
+      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
+      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
+      "9️⃣ BTC in Dollars (Check BTC price in USD)\n\n" +
+      "To register, type: REGISTER Name Email@example.com"
     );
   }
+  // REGISTRO DE USUARIO
+  else if (incomingMsgLower.startsWith("register")) {
+    const parts = incomingMsgSMS.split(/\s+/);
+    if (parts.length < 3) {
+      twiml.message("❌ Please send in format: REGISTER Name Email@example.com");
+    } else {
+      const email = parts[parts.length - 1]; // última palabra
+      const name = parts.slice(1, parts.length - 1).join(" "); // todas las palabras entre REGISTER y email
+
+      try {
+        const response = await fetch("https://sendo-sms.vercel.app/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phoneNumber: from,
+            name,
+            email
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          twiml.message(`✅ Registered successfully!\nName: ${name}\nEmail: ${email}\nPhone: ${from}`);
+        } else {
+          twiml.message(`❌ Could not register: ${data.error || "Unknown error"}`);
+        }
+      } catch (error) {
+        console.error(error);
+        twiml.message("❌ Error registering. Please try again later.");
+      }
+    }
+  }
   // BALANCE CON ID DE USUARIO
-  else if (incomingMsgSMS.startsWith("balance")) {
+  else if (incomingMsgLower.startsWith("balance")) {
     try {
-      const response = await fetch(`https://sendo-sms.vercel.app/api/users/${req.body.From}/balances`);
+      const response = await fetch(`https://sendo-sms.vercel.app/api/users/${from}/balances`);
       const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
-        let message = `💰 Balance for user ${req.body.From}:\n`;
+        let message = `💰 Balance for user ${from}:\n`;
         data.data.forEach(item => {
           message += `- ${item.currency}: ${item.amount}\n`;
         });
         twiml.message(message);
       } else {
-        twiml.message("❌ Could not retrieve balance.");
+        twiml.message(
+          "❌ Account not found. Please register first by sending: REGISTER Name Email@example.com"
+        );
       }
     } catch (error) {
       console.error(error);
-      twiml.message("❌ Error fetching balance.");
+      twiml.message(
+        "❌ Error fetching balance. Please ensure your account exists or register first: REGISTER Name Email@example.com"
+      );
     }
   }
   // TRANSFER
-  else if (incomingMsgSMS === "transfer") {
+  else if (incomingMsgLower === "transfer") {
     twiml.message("You chose the TRANSFER option");
   }
   // DEPOSIT
-  else if (incomingMsgSMS === "deposit") {
+  else if (incomingMsgLower === "deposit") {
     twiml.message("You chose the DEPOSIT option");
   }
   // WITHDRAW
-  else if (incomingMsgSMS === "withdraw") {
+  else if (incomingMsgLower === "withdraw") {
     twiml.message("You chose the WITHDRAW option");
   }
   // BTC in USD
-  else if (incomingMsgSMS === "btc in usd") {
+  else if (incomingMsgLower === "btc in usd") {
     twiml.message("You selected 'BTC in USD'");
   }
   // ETH to USD
-  else if (incomingMsgSMS === "eth to usd") {
+  else if (incomingMsgLower === "eth to usd") {
     twiml.message("You selected 'ETH to USD'");
   }
   // PYUSD to BTC
-  else if (incomingMsgSMS === "pyusd to btc") {
+  else if (incomingMsgLower === "pyusd to btc") {
     twiml.message("You selected 'PYUSD to BTC'");
   }
   // Convert USD to ETH
-  else if (incomingMsgSMS === "convert usd to eth") {
+  else if (incomingMsgLower === "convert usd to eth") {
     twiml.message("You selected 'Convert USD to ETH'");
   }
   // BTC in Dollars
-  else if (incomingMsgSMS === "btc in dollars") {
+  else if (incomingMsgLower === "btc in dollars") {
     twiml.message("You selected 'BTC in Dollars'");
   }
   // COMANDO NO RECONOCIDO
