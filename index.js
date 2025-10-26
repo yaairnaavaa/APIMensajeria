@@ -34,14 +34,14 @@ app.post("/sms", async (req, res) => {
   if (incomingMsgSMS === "hello" || incomingMsgSMS === "hi") {
     twiml.message(
     "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
-    "1️⃣ Balance (To check balance, type: BALANCE YOUR_USER_ID)\n" +
-    "2️⃣ Transfer (Send money to another user)\n" +
-    "3️⃣ Deposit (Add funds to your account)\n" +
-    "4️⃣ Withdraw (Withdraw funds from your account)\n" +
-    "5️⃣ BTC in USD (Check BTC price in USD)\n" +
-    "6️⃣ ETH to USD (Check ETH price in USD)\n" +
-    "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
-    "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
+    "1️⃣ Balance (To check balance, type: BALANCE YOUR_USER_ID)\n\n" +
+    "2️⃣ Transfer (Send money to another user)\n\n" +
+    "3️⃣ Deposit (Add funds to your account)\n\n" +
+    "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
+    "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
+    "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
+    "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
+    "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
     "9️⃣ BTC in Dollars (Check BTC price in USD)"
     );
   } 
@@ -49,14 +49,14 @@ app.post("/sms", async (req, res) => {
   else if (incomingMsgSMS === "menu") {
     twiml.message(
     "📋 OPTIONS:\n\n" +
-    "1️⃣ Balance (To check balance, type: BALANCE YOUR_USER_ID)\n" +
-    "2️⃣ Transfer (Send money to another user)\n" +
-    "3️⃣ Deposit (Add funds to your account)\n" +
-    "4️⃣ Withdraw (Withdraw funds from your account)\n" +
-    "5️⃣ BTC in USD (Check BTC price in USD)\n" +
-    "6️⃣ ETH to USD (Check ETH price in USD)\n" +
-    "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
-    "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
+    "1️⃣ Balance (To check balance, type: BALANCE YOUR_USER_ID)\n\n" +
+    "2️⃣ Transfer (Send money to another user)\n\n" +
+    "3️⃣ Deposit (Add funds to your account)\n\n" +
+    "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
+    "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
+    "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
+    "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
+    "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
     "9️⃣ BTC in Dollars (Check BTC price in USD)"
     );
   } 
