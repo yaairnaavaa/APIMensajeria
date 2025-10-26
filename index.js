@@ -191,7 +191,7 @@ app.post("/sms", async (req, res) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              type: "withdraw",
+              type: "withdrawal",
               currency,
               amount
             })
@@ -200,13 +200,13 @@ app.post("/sms", async (req, res) => {
           const data = await response.json();
 
           if (data.success) {
-            twiml.message(`✅ Deposit successful!\nAmount: ${amount} ${currency}`);
+            twiml.message(`✅ Withdraw successful!\nAmount: ${amount} ${currency}`);
           } else {
-            twiml.message(`❌ Could not deposit: ${data.error || "Unknown error"}`);
+            twiml.message(`❌ Could not withdraw: ${data.error || "Unknown error"}`);
           }
         } catch (error) {
           console.error(error);
-          twiml.message("❌ Error processing deposit. Please try again later.");
+          twiml.message("❌ Error processing withdraw. Please try again later.");
         }
       }
     }
