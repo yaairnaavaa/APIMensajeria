@@ -39,9 +39,9 @@ app.post("/sms", async (req, res) => {
       "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
       "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
       "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY AMOUNT, e.g., DEPOSIT USDT-ARB 50)\n\n" +
-      "3️⃣ Transfer (Send money to another user)\n\n" +
+      "3️⃣ Transfer (Send funds: TRANSFER TO_PHONE_NUMBER CURRENCY AMOUNT, e.g., TRANSFER +521234567890 USDT-ARB 50)\n\n" +
       "4️⃣ Withdraw (Withdraw funds: WITHDRAW CURRENCY AMOUNT, e.g., WITHDRAW USDT-ARB 50)\n\n" +
-      
+
       "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
       "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
       "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
@@ -171,8 +171,43 @@ app.post("/sms", async (req, res) => {
     }
   }
   // TRANSFER
-  else if (incomingMsgLower === "transfer") {
-    twiml.message("You chose the TRANSFER option");
+  else if (incomingMsgLower.startsWith("transfer")) {
+    const parts = incomingMsgSMS.split(/\s+/);
+    if (parts.length !== 4) {
+      twiml.message("❌ Please send in format: TRANSFER TO_PHONE_NUMBER CURRENCY AMOUNT\nExample: TRANSFER +521234567890 USDT-ARB 50");
+    } else {
+      const toPhoneNumber = parts[1];
+      const currency = parts[2].toUpperCase();
+      const amount = parseFloat(parts[3]);
+
+      if (!["PYUSD-ARB", "USDT-ARB", "SAT-BTC"].includes(currency) || isNaN(amount) || amount <= 0) {
+        twiml.message("❌ Invalid currency or amount. Valid currencies: PYUSD-ARB, USDT-ARB, SAT-BTC");
+      } else {
+        try {
+          const response = await fetch(`https://sendo-sms.vercel.app/api/users/${from}/transactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "transfer",
+              currency,
+              amount,
+              toPhoneNumber
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            twiml.message(`✅ Transfer successful!\nAmount: ${amount} ${currency}\nTo: ${toPhoneNumber}`);
+          } else {
+            twiml.message(`❌ Could not transfer: ${data.error || "Unknown error"}`);
+          }
+        } catch (error) {
+          console.error(error);
+          twiml.message("❌ Error processing transfer. Please try again later.");
+        }
+      }
+    }
   }
   // WITHDRAW
   else if (incomingMsgLower.startsWith("withdraw")) {
