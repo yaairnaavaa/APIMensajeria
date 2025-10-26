@@ -174,13 +174,42 @@ app.post("/sms", async (req, res) => {
   else if (incomingMsgLower === "transfer") {
     twiml.message("You chose the TRANSFER option");
   }
-  // DEPOSIT
-  else if (incomingMsgLower === "deposit") {
-    twiml.message("You chose the DEPOSIT option");
-  }
   // WITHDRAW
-  else if (incomingMsgLower === "withdraw") {
-    twiml.message("You chose the WITHDRAW option");
+  else if (incomingMsgLower.startsWith("withdraw")) {
+    const parts = incomingMsgSMS.split(/\s+/);
+    if (parts.length !== 3) {
+      twiml.message("❌ Please send in format: WITHDRAW CURRENCY AMOUNT\nExample: WITHDRAW USDT-ARB 50");
+    } else {
+      const currency = parts[1].toUpperCase();
+      const amount = parseFloat(parts[2]);
+
+      if (!["PYUSD-ARB", "USDT-ARB", "SAT-BTC"].includes(currency) || isNaN(amount) || amount <= 0) {
+        twiml.message("❌ Invalid currency or amount. Valid currencies: PYUSD-ARB, USDT-ARB, SAT-BTC");
+      } else {
+        try {
+          const response = await fetch(`https://sendo-sms.vercel.app/api/users/${from}/transactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "withdraw",
+              currency,
+              amount
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            twiml.message(`✅ Deposit successful!\nAmount: ${amount} ${currency}`);
+          } else {
+            twiml.message(`❌ Could not deposit: ${data.error || "Unknown error"}`);
+          }
+        } catch (error) {
+          console.error(error);
+          twiml.message("❌ Error processing deposit. Please try again later.");
+        }
+      }
+    }
   }
   // BTC in USD
   else if (incomingMsgLower === "btc in usd") {
