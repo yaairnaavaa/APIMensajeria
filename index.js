@@ -38,7 +38,7 @@ app.post("/sms", async (req, res) => {
     twiml.message(
       "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
       "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
-      "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY AMOUNT, e.g., DEPOSIT USDT-ARB 50)\n\n" +
+      "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY, e.g., DEPOSIT USDT-ARB)\n\n" +
       "3️⃣ Transfer (Send funds: TRANSFER TO_PHONE_NUMBER CURRENCY AMOUNT, e.g., TRANSFER +521234567890 USDT-ARB 50)\n\n" +
       "4️⃣ Withdraw (Withdraw funds: WITHDRAW CURRENCY AMOUNT, e.g., WITHDRAW USDT-ARB 10)\n\n" +
       "5️⃣ Convert crypto to another crypto (Supported: PYUSD, USD, BTC, ETH, MXN, e.g., CONVERT 5 BTC TO PYUSD)\n\n" +
@@ -172,9 +172,9 @@ app.post("/sms", async (req, res) => {
 
         // Construimos respuesta para el usuario
         const msg = `💰 Deposit Information\n\n` +
-          `Currency: ${currency}\n` +
-          `Network: ${depositInfo.network}\n` +
-          `Address: ${depositInfo.address}\n` +
+          `Currency: ${currency}\n\n` +
+          `Network: ${depositInfo.network}\n\n` +
+          `Address: ${depositInfo.address}\n\n` +
           `Minimum Deposit: ${depositInfo.minimumDeposit}\n\n` +
           `📋 ${depositInfo.instructions || ""}`;
 
