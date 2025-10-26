@@ -69,9 +69,18 @@ app.post("/sms", async (req, res) => {
       twiml.message("❌ Please provide your user ID. Example: BALANCE 68fd621752b7f9c00e6acccc");
     } else {
       try {
-        const response = await fetch(`https://sendo-sms.vercel.app/api/users/${userId}/balances`);
-        const data = await response.json();
-        twiml.message(`💰 Balance for user ${userId}: ${data.balance} USD`);
+      const response = await fetch(`https://sendo-sms.vercel.app/api/users/${userId}/balances`);
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.data)) {
+        let message = `💰 Balance for user ${userId}:\n`;
+        data.data.forEach(item => {
+          message += `- ${item.currency}: ${item.amount}\n`;
+        });
+        twiml.message(message);
+      } else {
+        twiml.message("❌ Could not retrieve balance. Please check your user ID.");
+      }
       } catch (error) {
         console.error(error);
         twiml.message("❌ Error fetching balance. Please check your user ID.");
