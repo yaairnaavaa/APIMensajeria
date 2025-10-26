@@ -34,7 +34,7 @@ app.post("/sms", async (req, res) => {
   console.log("📩 Body:", incomingMsgSMS);
 
   // MENSAJE DE BIENVENIDA
-  if (incomingMsgLower === "hello" || incomingMsgLower === "hi") {
+  if (incomingMsgLower === "hello" || incomingMsgLower === "start") {
     twiml.message(
       "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
       "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
