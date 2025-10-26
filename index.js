@@ -40,7 +40,8 @@ app.post("/sms", async (req, res) => {
       "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
       "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY AMOUNT, e.g., DEPOSIT USDT-ARB 50)\n\n" +
       "3️⃣ Transfer (Send money to another user)\n\n" +
-      "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
+      "4️⃣ Withdraw (Withdraw funds: WITHDRAW CURRENCY AMOUNT, e.g., WITHDRAW USDT-ARB 50)\n\n" +
+      
       "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
       "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
       "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
