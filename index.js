@@ -75,6 +75,7 @@ app.post("/sms", async (req, res) => {
       const name = parts.slice(1, parts.length - 1).join(" "); // todas las palabras entre REGISTER y email
 
       try {
+        // 1️⃣ Crear usuario principal
         const response = await fetch("https://sendo-sms.vercel.app/api/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -88,7 +89,32 @@ app.post("/sms", async (req, res) => {
         const data = await response.json();
 
         if (data.success) {
-          twiml.message(`✅ Registered successfully!\nName: ${name}\nEmail: ${email}\nPhone: ${from}`);
+          const userId = data.data._id;
+
+          // 2️⃣ Crear cuenta Arbitrum
+          try {
+            await fetch(`https://sendo-sms.vercel.app/api/users/${userId}/arbitrum-account`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+          } catch (err) {
+            console.error("❌ Error creating Arbitrum account:", err);
+          }
+
+          // 3️⃣ Crear cuenta Bitcoin
+          try {
+            await fetch(`https://sendo-sms.vercel.app/api/users/${userId}/bitcoin-account`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+          } catch (err) {
+            console.error("❌ Error creating Bitcoin account:", err);
+          }
+
+          twiml.message(
+            `✅ Registered successfully!\nName: ${name}\nEmail: ${email}\nPhone: ${from}\n` +
+            `Your Arbitrum and Bitcoin accounts have been created.`
+          );
         } else {
           twiml.message(`❌ Could not register: ${data.error || "Unknown error"}`);
         }
@@ -98,6 +124,7 @@ app.post("/sms", async (req, res) => {
       }
     }
   }
+
   // BALANCE CON ID DE USUARIO
   else if (incomingMsgLower.startsWith("balance")) {
     try {
