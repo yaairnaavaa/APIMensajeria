@@ -40,13 +40,8 @@ app.post("/sms", async (req, res) => {
       "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
       "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY AMOUNT, e.g., DEPOSIT USDT-ARB 50)\n\n" +
       "3️⃣ Transfer (Send funds: TRANSFER TO_PHONE_NUMBER CURRENCY AMOUNT, e.g., TRANSFER +521234567890 USDT-ARB 50)\n\n" +
-      "4️⃣ Withdraw (Withdraw funds: WITHDRAW CURRENCY AMOUNT, e.g., WITHDRAW USDT-ARB 50)\n\n" +
-
-      "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
-      "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
-      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
-      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
-      "9️⃣ BTC in Dollars (Check BTC price in USD)\n\n" +
+      "4️⃣ Withdraw (Withdraw funds: WITHDRAW CURRENCY AMOUNT, e.g., WITHDRAW USDT-ARB 10)\n\n" +
+      "5️⃣ Convert crypto to another crypto (Supported: PYUSD, USD, BTC, ETH, MXN, e.g., CONVERT 5 BTC TO PYUSD)\n\n" +
       "To register, type: REGISTER Name Email@example.com"
     );
   }
@@ -246,26 +241,38 @@ app.post("/sms", async (req, res) => {
       }
     }
   }
-  // BTC in USD
-  else if (incomingMsgLower === "btc in usd") {
-    twiml.message("You selected 'BTC in USD'");
+  // CONVERT
+  else if (incomingMsgLower.startsWith("convert")) {
+    const match = incomingMsgSMS.match(/convert\s+(\d+(\.\d+)?)\s+(\w+)\s+to\s+(\w+)/i);
+    if (!match) {
+      twiml.message("❌ Invalid format. Example: CONVERT 5 BTC TO PYUSD");
+    } else {
+      const amount = parseFloat(match[1]);
+      const fromCurrency = match[3].toUpperCase();
+      const toCurrency = match[4].toUpperCase();
+      const query = `convert ${amount} ${fromCurrency} to ${toCurrency}`;
+
+      try {
+        const response = await fetch("https://api-cryptocurrency.vercel.app/crypto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+
+        const data = await response.json();
+
+        if (data[fromCurrency]) {
+          twiml.message(`🔄 Conversion result: ${amount} ${fromCurrency} = ${data[fromCurrency]}`);
+        } else {
+          twiml.message("❌ Could not get conversion result. Try again later.");
+        }
+      } catch (error) {
+        console.error(error);
+        twiml.message("❌ Error connecting to conversion API. Please try again later.");
+      }
+    }
   }
-  // ETH to USD
-  else if (incomingMsgLower === "eth to usd") {
-    twiml.message("You selected 'ETH to USD'");
-  }
-  // PYUSD to BTC
-  else if (incomingMsgLower === "pyusd to btc") {
-    twiml.message("You selected 'PYUSD to BTC'");
-  }
-  // Convert USD to ETH
-  else if (incomingMsgLower === "convert usd to eth") {
-    twiml.message("You selected 'Convert USD to ETH'");
-  }
-  // BTC in Dollars
-  else if (incomingMsgLower === "btc in dollars") {
-    twiml.message("You selected 'BTC in Dollars'");
-  }
+
   // COMANDO NO RECONOCIDO
   else {
     twiml.message("❓ Command not recognized. Type 'MENU' to see available options.");
