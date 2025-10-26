@@ -37,30 +37,14 @@ app.post("/sms", async (req, res) => {
   if (incomingMsgLower === "hello" || incomingMsgLower === "hi") {
     twiml.message(
       "👋 Welcome to Sendo-SMS! Please choose an option:\n\n" +
-      "1️⃣ Balance (To check balance, type: BALANCE)\n" +
-      "2️⃣ Transfer (Send money to another user)\n" +
-      "3️⃣ Deposit (Add funds to your account)\n" +
-      "4️⃣ Withdraw (Withdraw funds from your account)\n" +
-      "5️⃣ BTC in USD (Check BTC price in USD)\n" +
-      "6️⃣ ETH to USD (Check ETH price in USD)\n" +
-      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
-      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
-      "9️⃣ BTC in Dollars (Check BTC price in USD)\n\n" +
-      "To register, type: REGISTER Name Email@example.com"
-    );
-  }
-  // MENÚ OPCIONES
-  else if (incomingMsgLower === "menu") {
-    twiml.message(
-      "📋 OPTIONS:\n\n" +
-      "1️⃣ Balance (To check balance, type: BALANCE)\n" +
-      "2️⃣ Transfer (Send money to another user)\n" +
-      "3️⃣ Deposit (Add funds to your account)\n" +
-      "4️⃣ Withdraw (Withdraw funds from your account)\n" +
-      "5️⃣ BTC in USD (Check BTC price in USD)\n" +
-      "6️⃣ ETH to USD (Check ETH price in USD)\n" +
-      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n" +
-      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n" +
+      "1️⃣ Balance (To check balance, type: BALANCE)\n\n" +
+      "2️⃣ Deposit (Add funds: DEPOSIT CURRENCY AMOUNT, e.g., DEPOSIT USDT-ARB 50)\n\n" +
+      "3️⃣ Transfer (Send money to another user)\n\n" +
+      "4️⃣ Withdraw (Withdraw funds from your account)\n\n" +
+      "5️⃣ BTC in USD (Check BTC price in USD)\n\n" +
+      "6️⃣ ETH to USD (Check ETH price in USD)\n\n" +
+      "7️⃣ PYUSD to BTC (Convert PYUSD to BTC)\n\n" +
+      "8️⃣ Convert USD to ETH (Convert USD to ETH)\n\n" +
       "9️⃣ BTC in Dollars (Check BTC price in USD)\n\n" +
       "To register, type: REGISTER Name Email@example.com"
     );
@@ -124,7 +108,6 @@ app.post("/sms", async (req, res) => {
       }
     }
   }
-
   // BALANCE CON ID DE USUARIO
   else if (incomingMsgLower.startsWith("balance")) {
     try {
@@ -147,6 +130,43 @@ app.post("/sms", async (req, res) => {
       twiml.message(
         "❌ Error fetching balance. Please ensure your account exists or register first: REGISTER Name Email@example.com"
       );
+    }
+  }
+  // DEPOSIT
+  else if (incomingMsgLower.startsWith("deposit")) {
+    const parts = incomingMsgSMS.split(/\s+/);
+    if (parts.length !== 3) {
+      twiml.message("❌ Please send in format: DEPOSIT CURRENCY AMOUNT\nExample: DEPOSIT USDT-ARB 50");
+    } else {
+      const currency = parts[1].toUpperCase();
+      const amount = parseFloat(parts[2]);
+
+      if (!["PYUSD-ARB", "USDT-ARB", "SAT-BTC"].includes(currency) || isNaN(amount) || amount <= 0) {
+        twiml.message("❌ Invalid currency or amount. Valid currencies: PYUSD-ARB, USDT-ARB, SAT-BTC");
+      } else {
+        try {
+          const response = await fetch(`https://sendo-sms.vercel.app/api/users/${from}/transactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "deposit",
+              currency,
+              amount
+            })
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            twiml.message(`✅ Deposit successful!\nAmount: ${amount} ${currency}`);
+          } else {
+            twiml.message(`❌ Could not deposit: ${data.error || "Unknown error"}`);
+          }
+        } catch (error) {
+          console.error(error);
+          twiml.message("❌ Error processing deposit. Please try again later.");
+        }
+      }
     }
   }
   // TRANSFER
